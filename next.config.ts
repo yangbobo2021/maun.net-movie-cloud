@@ -1,6 +1,6 @@
-/** @type {import{ 'Next' } from "NextConfig";
+/** @type {import( 'Next' ) from NextConfig};
 
-const nextConfig: NextConfig = {
+const NextConfig = {
    output:'export',
     images: {
       unoptimized: true,
