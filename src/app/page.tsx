@@ -1,3 +1,4 @@
+export cons runtime = 'edge';
 import { Suspense } from "react";
 import HomeContent from "./home-content";
 
