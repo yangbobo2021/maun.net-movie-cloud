@@ -1,3 +1,4 @@
+export cons dynamic = 'force-static';
 import { safeJson, encryptedResponse } from "@/lib/api-utils";
 import { NextRequest, NextResponse } from "next/server";
 
