@@ -1,4 +1,4 @@
-import type { NextConfig } from "next";
+/** @type {import{ 'Next' } from "NextConfig";
 
 const nextConfig: NextConfig = {
    output:'export',
