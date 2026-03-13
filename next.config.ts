@@ -1,10 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
+  // Kita hapus output: 'export' agar API tetap hidup
   images: {
     unoptimized: true,
   },
-  trailingSlash: true,
 }
 
 export default nextConfig
