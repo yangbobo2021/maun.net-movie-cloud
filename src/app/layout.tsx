@@ -1,4 +1,3 @@
-export const runtime = 'edge';
 import { Analytics } from "@vercel/analytics/react";
 import type { Metadata } from "next";
 import "@/styles/globals.css";
