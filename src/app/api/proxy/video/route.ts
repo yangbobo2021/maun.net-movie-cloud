@@ -1,3 +1,4 @@
+export const dynamic = 'force-static';
 import { NextRequest, NextResponse } from "next/server"; 
 import https from "https";
 import http from "http";
@@ -271,3 +272,4 @@ export async function GET(req: NextRequest) {
     return new NextResponse("Internal Server Error", { status: 500 });
   }
 }
+

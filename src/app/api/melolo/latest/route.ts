@@ -1,3 +1,4 @@
+export const dynamic = 'force-static';
 
 import { type NextRequest } from "next/server";
 import { encryptedResponse } from "@/lib/api-utils";
@@ -13,3 +14,4 @@ export async function GET(request: NextRequest) {
     return encryptedResponse({ error: message }, 500);
   }
 }
+

@@ -1,4 +1,5 @@
 export const dynamic = 'force-static';
+export const dynamic = 'force-static';
 import { NextRequest, NextResponse } from "next/server";
 import { encryptedResponse } from "@/lib/api-utils";
 
@@ -31,3 +32,4 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
+

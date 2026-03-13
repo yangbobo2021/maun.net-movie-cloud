@@ -1,3 +1,4 @@
+export const dynamic = 'force-static';
 import { safeJson, encryptedResponse } from "@/lib/api-utils";
 import { optimizeCover } from "@/lib/image-utils";
 
@@ -34,3 +35,4 @@ export async function GET() {
     return encryptedResponse({ success: false, data: [] });
   }
 }
+

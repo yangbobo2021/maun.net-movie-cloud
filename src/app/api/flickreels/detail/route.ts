@@ -1,3 +1,4 @@
+export const dynamic = 'force-static';
 import { encryptedResponse, safeJson } from "@/lib/api-utils";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -42,3 +43,4 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+

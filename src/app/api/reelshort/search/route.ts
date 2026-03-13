@@ -1,4 +1,5 @@
 export const dynamic = 'force-static';
+export const dynamic = 'force-static';
 import { safeJson, encryptedResponse } from "@/lib/api-utils";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -46,4 +47,5 @@ export async function GET(request: NextRequest) {
     return encryptedResponse({ success: false, data: [] });
   }
 }
+
 

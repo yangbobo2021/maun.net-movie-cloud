@@ -1,3 +1,4 @@
+export const dynamic = 'force-static';
 import { NextRequest } from "next/server";
 import https from "https";
 import http from "http";
@@ -166,3 +167,4 @@ export async function GET(req: NextRequest) {
     return new Response(`Proxy error: ${error}`, { status: 502 });
   }
 }
+
