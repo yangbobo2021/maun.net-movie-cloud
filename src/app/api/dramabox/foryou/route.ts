@@ -1,41 +1,19 @@
-export const dynamic = 'force-static';
-import { safeJson, encryptedResponse } from "@/lib/api-utils";
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from "next/server";
 
-export const dynamic = 'force-dynamic';
-
-const UPSTREAM_API = (process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.sansekai.my.id/api") + "/dramabox";
+const UPSTREAM_API = "https://api.sansekai.my.id/api/dramabox/foryou"; 
 
 export async function GET(request: NextRequest) {
+  const { searchParams } = request.nextUrl;
+  const voucher = searchParams.get("voucher") || ""; 
+
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const page = searchParams.get("page") || "1";
-    
-    const response = await fetch(`${UPSTREAM_API}/foryou?page=${page}`, {
+    const response = await fetch(${UPSTREAM_API}?voucher=${voucher}, {
       cache: 'no-store',
     });
-    if (!response.ok) {
-      return NextResponse.json(
-        { error: "Failed to fetch data" },
-        { status: response.status }
-      );
-    }
-
-    const data = await safeJson(response);
-    
-    // Filter out items without bookId or bookName to prevent blank cards
-    const filteredData = Array.isArray(data) 
-      ? data.filter((item: any) => item && item.bookId) 
-      : [];
-
-    return encryptedResponse(filteredData);
+    const data = await response.json();
+    return NextResponse.json(data);
   } catch (error) {
-    console.error("API Error:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
-
-
