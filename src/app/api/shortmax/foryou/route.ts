@@ -1,44 +1,21 @@
-export const dynamic = 'force-static';
-import { safeJson, encryptedResponse } from "@/lib/api-utils";
-import { optimizeCover } from "@/lib/image-utils";
-import { NextRequest } from "next/server";
+export const dynamic = 'force-dynamic';
+import { NextRequest, NextResponse } from "next/server";
 
-const UPSTREAM_API = (process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.sansekai.my.id/api") + "/shortmax";
+const UPSTREAM_API = "https://api.sansekai.my.id/api/shortmax/hls"; 
 
 export async function GET(request: NextRequest) {
-  try {
-    const searchParams = request.nextUrl.searchParams;
-    const page = searchParams.get("page") || "1";
+  const { searchParams } = request.nextUrl;
+  const url = searchParams.get("url"); // Biasanya HLS butuh parameter URL video
 
-    const response = await fetch(`${UPSTREAM_API}/foryou?page=${page}`, {
+  if (!url) return NextResponse.json({ error: "URL required" }, { status: 400 });
+
+  try {
+    const response = await fetch(${UPSTREAM_API}?url=${encodeURIComponent(url)}, {
       cache: 'no-store',
     });
-
-    if (!response.ok) {
-      return encryptedResponse({ success: false, data: [], isEnd: true });
-    }
-
-    const data = await safeJson<any>(response);
-
-    const dramas = (data.results || []).map((item: any) => ({
-      shortPlayId: item.shortPlayId,
-      title: item.name,
-      cover: optimizeCover(item.cover),
-      totalEpisodes: item.totalEpisodes || 0,
-      playNum: item.playNum || 0,
-      summary: item.summary || "",
-    }));
-
-    return encryptedResponse({
-      success: true,
-      data: dramas,
-      page: Number(page),
-      isEnd: data.isEnd || false,
-      total: data.total || dramas.length,
-    });
+    const data = await response.json();
+    return NextResponse.json(data);
   } catch (error) {
-    console.error("ShortMax ForYou Error:", error);
-    return encryptedResponse({ success: false, data: [], isEnd: true });
+    return NextResponse.json({ error: "Error fetching HLS" }, { status: 500 });
   }
 }
-
