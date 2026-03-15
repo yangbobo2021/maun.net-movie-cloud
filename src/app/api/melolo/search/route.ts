@@ -1,24 +1,22 @@
-export const dynamic = 'force-static';
-export const dynamic = 'force-static';
-import { type NextRequest } from "next/server";
-import { encryptedResponse } from "@/lib/api-utils";
+export const dynamic = 'force-dynamic';
+import { NextRequest, NextResponse } from "next/server";
+
+const UPSTREAM_API = "https://api.sansekai.my.id/api/melolo/search"; 
 
 export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
+  const { searchParams } = request.nextUrl;
   const query = searchParams.get("query");
+  const voucher = searchParams.get("voucher") || ""; 
 
-  if (!query) {
-    return encryptedResponse({ error: "Query parameter is required" }, 400);
-  }
+  if (!query) return NextResponse.json({ error: "Query required" }, { status: 400 });
 
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.sansekai.my.id/api";
-    const response = await fetch(`${baseUrl}/melolo/search?query=${encodeURIComponent(query)}`);
+    const response = await fetch(${UPSTREAM_API}?query=${encodeURIComponent(query)}&voucher=${voucher}, {
+      cache: 'no-store',
+    });
     const data = await response.json();
-    return encryptedResponse(data);
+    return NextResponse.json(data);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return encryptedResponse({ error: message }, 500);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
-
