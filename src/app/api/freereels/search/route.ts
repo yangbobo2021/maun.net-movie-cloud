@@ -1,35 +1,22 @@
-export const dynamic = 'force-static';
-export const dynamic = 'force-static';
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from "next/server";
-import { encryptedResponse } from "@/lib/api-utils";
+
+const UPSTREAM_API = "https://api.sansekai.my.id/api/freereels/search"; 
 
 export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
+  const { searchParams } = request.nextUrl;
   const query = searchParams.get("query");
+  const voucher = searchParams.get("voucher") || ""; 
 
-  if (!query) {
-    return NextResponse.json({ error: "Query parameter is required" }, { status: 400 });
-  }
+  if (!query) return NextResponse.json({ error: "Query required" }, { status: 400 });
 
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.sansekai.my.id/api"}/freereels/search?query=${encodeURIComponent(query)}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        // Add any necessary headers here
-      },
-      next: { revalidate: 0 } // Don't cache search results
+    const response = await fetch(${UPSTREAM_API}?query=${encodeURIComponent(query)}&voucher=${voucher}, {
+      cache: 'no-store',
     });
-
-    if (!res.ok) {
-      throw new Error(`Upstream API failed with status ${res.status}`);
-    }
-
-    const data = await res.json();
-    return await encryptedResponse(data);
+    const data = await response.json();
+    return NextResponse.json(data);
   } catch (error) {
-    console.error("Error fetching FreeReels search:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
-
