@@ -1,46 +1,32 @@
-export const dynamic = 'force-static';
-export const dynamic = 'force-static';
-import { safeJson, encryptedResponse } from "@/lib/api-utils";
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from "next/server";
 
-const UPSTREAM_API = (process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.sansekai.my.id/api") + "/dramabox";
+// Alamat API asli kamu
+const UPSTREAM_API = "https://api.sansekai.my.id/api/dramabox/search"; 
 
 export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
+  const { searchParams } = request.nextUrl;
   const query = searchParams.get("query");
+  const voucher = searchParams.get("voucher") || ""; // Ini untuk menangkap voucher
 
   if (!query) {
-    return encryptedResponse([]);
+    return NextResponse.json({ error: "Query required" }, { status: 400 });
   }
 
   try {
-    const response = await fetch(
-      `${UPSTREAM_API}/search?query=${encodeURIComponent(query)}`,
-      { cache: 'no-store',}
-    );
+    // Memanggil API dengan query dan voucher
+    const response = await fetch(${UPSTREAM_API}?query=${encodeURIComponent(query)}&voucher=${voucher}, {
+      cache: 'no-store',
+    });
 
     if (!response.ok) {
-      return NextResponse.json(
-        { error: "Failed to fetch data" },
-        { status: response.status }
-      );
+      return NextResponse.json({ error: "Failed to fetch data" }, { status: response.status });
     }
 
-    const data = await safeJson(response);
-
-    // Filter out non-drama results (e.g. type:"actor") that have no bookId
-    const filtered = Array.isArray(data)
-      ? data.filter((item: any) => item.bookId)
-      : data;
-
-    return encryptedResponse(filtered);
+    const data = await response.json();
+    return NextResponse.json(data);
   } catch (error) {
-    console.error("API Error:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
-
-
