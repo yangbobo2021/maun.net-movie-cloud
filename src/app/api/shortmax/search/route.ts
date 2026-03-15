@@ -1,47 +1,22 @@
-export const dynamic = 'force-static';
-export const dynamic = 'force-static';
-import { safeJson, encryptedResponse } from "@/lib/api-utils";
-import { optimizeCover } from "@/lib/image-utils";
-import { NextRequest } from "next/server";
+export const dynamic = 'force-dynamic';
+import { NextRequest, NextResponse } from "next/server";
 
-const UPSTREAM_API = (process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.sansekai.my.id/api") + "/shortmax";
+const UPSTREAM_API = "https://api.sansekai.my.id/api/shortmax/search"; 
 
 export async function GET(request: NextRequest) {
+  const { searchParams } = request.nextUrl;
+  const query = searchParams.get("query");
+  const voucher = searchParams.get("voucher") || ""; 
+
+  if (!query) return NextResponse.json({ error: "Query required" }, { status: 400 });
+
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const query = searchParams.get("query");
-
-    if (!query) {
-      return encryptedResponse({ success: true, data: [] });
-    }
-
-    const response = await fetch(
-      `${UPSTREAM_API}/search?query=${encodeURIComponent(query)}`,
-      { cache: 'no-store' }
-    );
-
-    if (!response.ok) {
-      return encryptedResponse({ success: true, data: [] });
-    }
-
-    const data = await safeJson<any>(response);
-
-    const results = (data.results || []).map((item: any) => ({
-      shortPlayId: item.shortPlayId,
-      shortPlayCode: item.shortPlayCode,
-      title: (item.name || "").replace(/<\/?em>/g, ""),
-      cover: optimizeCover(item.cover),
-      genre: (item.genre || []).map((g: string) => g.replace(/<\/?em>/g, "")),
-    }));
-
-    return encryptedResponse({
-      success: true,
-      data: results,
-      total: data.total || results.length,
+    const response = await fetch(${UPSTREAM_API}?query=${encodeURIComponent(query)}&voucher=${voucher}, {
+      cache: 'no-store',
     });
+    const data = await response.json();
+    return NextResponse.json(data);
   } catch (error) {
-    console.error("ShortMax Search Error:", error);
-    return encryptedResponse({ success: true, data: [] });
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
-
