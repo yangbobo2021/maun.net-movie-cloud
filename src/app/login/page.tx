@@ -1,0 +1,58 @@
+'use client'
+import { useState } from 'react'
+
+export default function LoginPage() {
+  const [kode, setKode] = useState('')
+
+  const cekVoucher = async () => {
+    const response = await fetch('/api/check-voucher', {
+      method: 'POST',
+      body: JSON.stringify({ kode }),
+    })
+
+    if (response.ok) {
+      // Tiket aktif selama 7 hari
+      document.cookie = "akses_film=true; path=/; max-age=604800"
+      window.location.href = '/'
+    } else {
+      alert('Kode Voucher Salah atau Sudah Kadaluwarsa!')
+    }
+  }
+
+  return (
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#000', color: '#fff', textAlign: 'center', padding: '20px', fontFamily: 'sans-serif' }}>
+      
+      <h1 style={{ color: '#e50914', fontSize: '3rem', marginBottom: '10px', fontWeight: 'bold' }}>MAUN.NET</h1>
+      <h2 style={{ fontSize: '1.2rem', marginBottom: '30px' }}>Bioskop Premium di Genggamanmu</h2>
+
+      <div style={{ background: '#141414', padding: '30px', borderRadius: '10px', boxShadow: '0 0 20px rgba(229, 9, 20, 0.2)', width: '100%', maxWidth: '400px' }}>
+        <p style={{ marginBottom: '20px' }}>Silahkan masukkan kode voucher</p>
+        
+        <input 
+          type="text" 
+          placeholder="KODE VOUCHER" 
+          value={kode}
+          onChange={(e) => setKode(e.target.value)}
+          style={{ padding: '15px', width: '100%', borderRadius: '5px', border: 'none', marginBottom: '20px', fontSize: '1rem', textAlign: 'center', fontWeight: 'bold' }}
+        />
+        
+        <button onClick={cekVoucher} style={{ padding: '15px', width: '100%', background: '#e50914', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem' }}>
+          MULAI NONTON
+        </button>
+
+        <hr style={{ margin: '30px 0', border: '0.5px solid #333' }} />
+
+        <p style={{ fontSize: '0.9rem', color: '#aaa' }}>Belum punya kode voucher?</p>
+        <a 
+          href="https://wa.me/6281245511900?text=Halo%20Admin,%20saya%20mau%20beli%20voucher%20nonton" 
+          target="_blank" 
+          style={{ display: 'inline-block', marginTop: '10px', padding: '10px 20px', background: '#25D366', color: '#fff', textDecoration: 'none', borderRadius: '5px', fontWeight: 'bold', fontSize: '0.9rem' }}
+        >
+          Hubungi WA: 081245511900
+        </a>
+      </div>
+
+      <p style={{ marginTop: '40px', fontSize: '0.7rem', color: '#555' }}>&copy; 2026 MAUN.NET Movie Streaming</p>
+    </div>
+  )
+}
