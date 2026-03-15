@@ -1,39 +1,22 @@
-export const dynamic = 'force-static';
-export const dynamic = 'force-static';
-import { encryptedResponse, safeJson } from "@/lib/api-utils";
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from "next/server";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.sansekai.my.id";
-const API_URL = BASE_URL.endsWith("/api") ? BASE_URL : `${BASE_URL}/api`;
+const UPSTREAM_API = "https://api.sansekai.my.id/api/flickreels/search"; 
 
 export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
+  const { searchParams } = request.nextUrl;
   const query = searchParams.get("query");
+  const voucher = searchParams.get("voucher") || ""; 
 
-  if (!query) {
-    return encryptedResponse({ status_code: 0, msg: "Query param required" }, 400);
-  }
+  if (!query) return NextResponse.json({ error: "Query required" }, { status: 400 });
 
   try {
-    const res = await fetch(`${API_URL}/flickreels/search?query=${encodeURIComponent(query)}`, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Referer": "https://www.flickreels.com/",
-      },
+    const response = await fetch(${UPSTREAM_API}?query=${encodeURIComponent(query)}&voucher=${voucher}, {
+      cache: 'no-store',
     });
-
-    if (!res.ok) {
-      throw new Error(`Upstream API failed with status: ${res.status}`);
-    }
-
-    const data = await safeJson(res);
-    return encryptedResponse(data);
+    const data = await response.json();
+    return NextResponse.json(data);
   } catch (error) {
-    console.error("Error fetching FlickReels search:", error);
-    return encryptedResponse(
-      { status_code: 0, msg: "Internal Server Error" },
-      500
-    );
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
-
