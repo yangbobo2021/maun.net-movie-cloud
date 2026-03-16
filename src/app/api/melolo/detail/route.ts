@@ -1,24 +1,35 @@
-export const dynamic = 'force-static';
-
-import { type NextRequest } from "next/server";
-import { encryptedResponse } from "@/lib/api-utils";
+export const dynamic = 'force-dynamic';
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const bookId = searchParams.get("bookId");
-
-  if (!bookId) {
-    return Response.json({ error: "Missing bookId" }, { status: 400 });
+  const { searchParams } = request.nextUrl;
+  const id = searchParams.get("id") || "";
+  const voucher = searchParams.get("voucher") || "";
+  
+  // PROTEKSI VOUCHER
+  if (!voucher || voucher.length < 2) {
+    return NextResponse.json({ 
+      error: "Voucher Required", 
+      message: "Akses Ditolak! Untuk Beli Voucher silakan hubungi: Rhezza Maun. No WhatsApp: 081245511900" 
+    }, { status: 403 });
   }
+
+  const pathParts = request.nextUrl.pathname.split('/');
+  const folder = pathParts[3];
+  const UPSTREAM_API = `https://api.sansekai.my.id/api/${folder}/detail`;
 
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.sansekai.my.id/api";
-    const response = await fetch(`${baseUrl}/melolo/detail?bookId=${bookId}`);
+    const response = await fetch(`${UPSTREAM_API}?id=${id}&voucher=${voucher}`, {
+      cache: 'no-store',
+    });
     const data = await response.json();
-    return encryptedResponse(data);
+
+    if (data.status === "failed" || data.error) {
+      return NextResponse.json({ error: "Invalid Voucher", message: "Voucher salah/expired. Hubungi Rhezza Maun (081245511900)." }, { status: 403 });
+    }
+
+    return NextResponse.json(data);
   } catch (error) {
-    console.error("Error fetching Melolo detail:", error);
-    return Response.json({ error: "Failed to fetch data" }, { status: 500 });
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
-
