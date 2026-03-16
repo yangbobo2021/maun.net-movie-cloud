@@ -1,44 +1,35 @@
-export const dynamic = 'force-static';
-import { safeJson, encryptedResponse } from "@/lib/api-utils";
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from "next/server";
 
-const UPSTREAM_API = (process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.sansekai.my.id/api") + "/reelshort";
-
 export async function GET(request: NextRequest) {
+  const { searchParams } = request.nextUrl;
+  const id = searchParams.get("id") || "";
+  const voucher = searchParams.get("voucher") || "";
+  
+  // PROTEKSI VOUCHER
+  if (!voucher || voucher.length < 2) {
+    return NextResponse.json({ 
+      error: "Voucher Required", 
+      message: "Akses Ditolak! Untuk Beli Voucher silakan hubungi: Rhezza Maun. No WhatsApp: 081245511900" 
+    }, { status: 403 });
+  }
+
+  const pathParts = request.nextUrl.pathname.split('/');
+  const folder = pathParts[3];
+  const UPSTREAM_API = `https://api.sansekai.my.id/api/${folder}/detail`;
+
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const bookId = searchParams.get("bookId");
+    const response = await fetch(`${UPSTREAM_API}?id=${id}&voucher=${voucher}`, {
+      cache: 'no-store',
+    });
+    const data = await response.json();
 
-    if (!bookId) {
-      return encryptedResponse(
-        { error: "bookId is required" },
-        400
-      );
+    if (data.status === "failed" || data.error) {
+      return NextResponse.json({ error: "Invalid Voucher", message: "Voucher salah/expired. Hubungi Rhezza Maun (081245511900)." }, { status: 403 });
     }
 
-    const response = await fetch(
-      `${UPSTREAM_API}/detail?bookId=${encodeURIComponent(bookId)}`,
-      {
-        cache: 'no-store',
-      }
-    );
-
-    if (!response.ok) {
-      return encryptedResponse(
-        { error: "Failed to fetch detail" },
-        response.status
-      );
-    }
-
-    const data = await safeJson(response);
-    return encryptedResponse(data);
+    return NextResponse.json(data);
   } catch (error) {
-    console.error("ReelShort Detail Error:", error);
-    return encryptedResponse(
-      { error: "Internal Server Error" },
-      500
-    );
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
-
-
