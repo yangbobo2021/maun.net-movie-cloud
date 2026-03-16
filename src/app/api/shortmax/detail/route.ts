@@ -1,55 +1,35 @@
-export const dynamic = 'force-static';
-import { safeJson, encryptedResponse } from "@/lib/api-utils";
-import { optimizeCover } from "@/lib/image-utils";
-import { NextRequest } from "next/server";
-
-const UPSTREAM_API = (process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.sansekai.my.id/api") + "/shortmax";
+export const dynamic = 'force-dynamic';
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
+  const { searchParams } = request.nextUrl;
+  const id = searchParams.get("id") || "";
+  const voucher = searchParams.get("voucher") || "";
+  
+  // PROTEKSI VOUCHER
+  if (!voucher || voucher.length < 2) {
+    return NextResponse.json({ 
+      error: "Voucher Required", 
+      message: "Akses Ditolak! Untuk Beli Voucher silakan hubungi: Rhezza Maun. No WhatsApp: 081245511900" 
+    }, { status: 403 });
+  }
+
+  const pathParts = request.nextUrl.pathname.split('/');
+  const folder = pathParts[3];
+  const UPSTREAM_API = `https://api.sansekai.my.id/api/${folder}/detail`;
+
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const shortPlayId = searchParams.get("shortPlayId");
-
-    if (!shortPlayId) {
-      return encryptedResponse(
-        { success: false, error: "shortPlayId is required" },
-        400
-      );
-    }
-
-    const response = await fetch(`${UPSTREAM_API}/detail?shortPlayId=${shortPlayId}`, {
+    const response = await fetch(`${UPSTREAM_API}?id=${id}&voucher=${voucher}`, {
       cache: 'no-store',
     });
+    const data = await response.json();
 
-    if (!response.ok) {
-      return encryptedResponse(
-        { success: false, error: "Failed to fetch detail" }
-      );
+    if (data.status === "failed" || data.error) {
+      return NextResponse.json({ error: "Invalid Voucher", message: "Voucher salah/expired. Hubungi Rhezza Maun (081245511900)." }, { status: 403 });
     }
 
-    const raw = await safeJson<any>(response);
-    const data = raw.data || raw;
-
-    const labels = (data.labelResponseList || []).map((l: any) => l.labelName);
-
-    return encryptedResponse({
-      success: true,
-      shortPlayId: data.id,
-      shortPlayCode: data.shortPlayCode,
-      title: data.shortPlayName,
-      cover: optimizeCover(data.picUrl),
-      description: data.summary || data.recommendContent || "",
-      labels,
-      totalEpisodes: data.totalEpisodes || 0,
-      updateEpisode: data.updateEpisode || 0,
-      lockBegin: data.lockBegin || 0,
-      collectNum: data.collectNum || 0,
-    });
+    return NextResponse.json(data);
   } catch (error) {
-    console.error("ShortMax Detail Error:", error);
-    return encryptedResponse(
-      { success: false, error: "Internal server error" }
-    );
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
-
