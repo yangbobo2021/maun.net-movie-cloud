@@ -22,8 +22,10 @@ export default function ShortMaxWatchPage() {
   const [currentEpisode, setCurrentEpisode] = useState(1);
   const [showEpisodeList, setShowEpisodeList] = useState(false);
   const [selectedQuality, setSelectedQuality] = useState<string>("720");
+  const [autoplayBlocked, setAutoplayBlocked] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
+  const lastVideoUrlRef = useRef<string | null>(null);
 
   // Get episode from URL
   useEffect(() => {
@@ -85,6 +87,12 @@ export default function ShortMaxWatchPage() {
     const videoUrl = getVideoUrl();
     if (!videoUrl || !videoRef.current) return;
 
+    // Only reset autoplay blocked state if video URL actually changed
+    if (videoUrl !== lastVideoUrlRef.current) {
+      lastVideoUrlRef.current = videoUrl;
+      setAutoplayBlocked(false);
+    }
+
     const video = videoRef.current;
 
     // Clean up previous HLS instance
@@ -109,7 +117,9 @@ export default function ShortMaxWatchPage() {
       hls.attachMedia(video);
 
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        video.play().catch(() => {});
+        video.play().catch(() => {
+          setAutoplayBlocked(true);
+        });
       });
 
       hls.on(Hls.Events.ERROR, (_event, data) => {
@@ -122,7 +132,9 @@ export default function ShortMaxWatchPage() {
       // Native playback (Safari HLS or MP4)
       video.src = videoUrl;
       video.load();
-      video.play().catch(() => {});
+      video.play().catch(() => {
+        setAutoplayBlocked(true);
+      });
     }
 
     return () => {
@@ -222,7 +234,27 @@ export default function ShortMaxWatchPage() {
                 <p className="text-white/70 text-sm">Episode ini memerlukan akses premium</p>
               </div>
             )}
-            
+
+            {autoplayBlocked && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4 z-20 bg-black/60 backdrop-blur-sm">
+                <button
+                  onClick={() => {
+                    setAutoplayBlocked(false);
+                    videoRef.current?.play();
+                  }}
+                  className="flex flex-col items-center gap-4 group"
+                >
+                  <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center group-hover:bg-white/30 transition-all">
+                    <svg className="w-8 h-8 md:w-10 md:h-10 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z"/>
+                    </svg>
+                  </div>
+                  <p className="text-white font-medium text-lg drop-shadow-lg">Tap to Play</p>
+                  <p className="text-white/70 text-sm">Autoplay was blocked by your browser</p>
+                </button>
+              </div>
+            )}
+
             <video
               ref={videoRef}
               className="w-full h-full object-contain max-h-[100dvh]"
