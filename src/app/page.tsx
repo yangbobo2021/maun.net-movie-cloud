@@ -10,14 +10,14 @@ export default function HomePage() {
       <div className="fixed top-16 left-0 w-full bg-primary/20 backdrop-blur-md border-b border-primary/30 py-2 z-40 overflow-hidden">
         <div className="flex whitespace-nowrap animate-marquee">
           <span className="text-sm font-bold text-primary px-8">
-            🔥 PROMO VIP: Akses ribuan film premium tanpa batas! Hubungi Rhezza Maun (0812-4551-1900) untuk aktivasi voucher instan 🔥
+            🔥 PROMO VIP: Akses ribuan film premium tanpa batas! HANYA 2000 PER-HARI !!!! Hubungi Rhezza Maun (0812-4551-1900) untuk aktivasi voucher instan 🔥
           </span>
           <span className="text-sm font-bold text-primary px-8">
             🚀 Nonton lancar tanpa iklan hanya di MAUN.NET.MOVIE - Hubungi Rhezza Maun sekarang! 🚀
           </span>
           {/* Teks duplikat agar jalan terus tanpa putus */}
           <span className="text-sm font-bold text-primary px-8">
-            🔥 PROMO VIP: Akses ribuan film premium tanpa batas! Hubungi Rhezza Maun (0812-4551-1900) untuk aktivasi voucher instan 🔥
+            🔥 PROMO VIP: Akses ribuan film premium tanpa batas! HANYA 2000 PER-HARI !!!! Hubungi Rhezza Maun (0812-4551-1900) untuk aktivasi voucher instan 🔥
           </span>
           <span className="text-sm font-bold text-primary px-8">
             🚀 Nonton lancar tanpa iklan hanya di MAUN.NET.MOVIE - Hubungi Rhezza Maun sekarang! 🚀
