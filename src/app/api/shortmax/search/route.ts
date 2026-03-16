@@ -1,22 +1,22 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from "next/server";
 
-const UPSTREAM_API = "https://api.sansekai.my.id/api/shortmax/search"; 
-
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
-  const query = searchParams.get("query");
-  const voucher = searchParams.get("voucher") || ""; 
-
-  if (!query) return NextResponse.json({ error: "Query required" }, { status: 400 });
+  const query = searchParams.get("query") || "";
+  const voucher = searchParams.get("voucher") || "";
+  
+  const pathParts = request.nextUrl.pathname.split('/');
+  const folder = pathParts[3]; 
+  const UPSTREAM_API = `https://api.sansekai.my.id/api/${folder}/search`;
 
   try {
-    const response = await fetch(${UPSTREAM_API}?query=${encodeURIComponent(query)}&voucher=${voucher}, {
+    const response = await fetch(`${UPSTREAM_API}?query=${encodeURIComponent(query)}&voucher=${voucher}`, {
       cache: 'no-store',
     });
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    return NextResponse.json({ error: "Error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
