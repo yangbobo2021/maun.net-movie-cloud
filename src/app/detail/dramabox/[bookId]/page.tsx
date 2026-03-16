@@ -2,18 +2,16 @@
 
 import { UnifiedErrorDisplay } from "@/components/UnifiedErrorDisplay";
 import { useDramaDetail } from "@/hooks/useDramaDetail";
-import { Play, Calendar, ChevronLeft } from "lucide-react";
+import { Play, Calendar, ChevronLeft, MessageCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import type { DramaDetailDirect, DramaDetailResponseLegacy } from "@/types/drama";
 
-// Helper to check if response is new format
 function isDirectFormat(data: unknown): data is DramaDetailDirect {
   return data !== null && typeof data === 'object' && 'bookId' in data && 'coverWap' in data;
 }
 
-// Helper to check if response is legacy format
 function isLegacyFormat(data: unknown): data is DramaDetailResponseLegacy {
   return data !== null && typeof data === 'object' && 'data' in data && (data as DramaDetailResponseLegacy).data?.book !== undefined;
 }
@@ -28,7 +26,6 @@ export default function DramaBoxDetailPage() {
     return <DetailSkeleton />;
   }
 
-  // Handle both new and legacy API formats
   let book: {
     bookId: string;
     bookName: string;
@@ -40,7 +37,6 @@ export default function DramaBoxDetailPage() {
   } | null = null;
 
   if (isDirectFormat(data)) {
-    // New flat format
     book = {
       bookId: data.bookId,
       bookName: data.bookName,
@@ -51,7 +47,6 @@ export default function DramaBoxDetailPage() {
       shelfTime: data.shelfTime,
     };
   } else if (isLegacyFormat(data)) {
-    // Legacy nested format
     book = {
       bookId: data.data.book.bookId,
       bookName: data.data.book.bookName,
@@ -63,24 +58,54 @@ export default function DramaBoxDetailPage() {
     };
   }
 
+  // Tampilan ketika Voucher Kosong atau Error
   if (error || !book) {
+    const waLink = "https://wa.me/6281245511900?text=Halo%20Rhezza%20Maun,%20saya%20mau%20beli%20voucher%20untuk%20nonton%20film";
+    
     return (
-      <div className="min-h-screen pt-24 px-4">
-        <UnifiedErrorDisplay 
-          title="Drama tidak ditemukan"
-          message="Tidak dapat memuat detail drama. Silakan coba lagi atau kembali ke beranda."
-          onRetry={() => router.push('/')}
-          retryLabel="Kembali ke Beranda"
-        />
+      <div className="min-h-screen pt-24 px-4 flex items-center justify-center">
+        <div className="max-w-md w-full glass p-8 rounded-3xl text-center space-y-6 shadow-2xl border border-primary/20">
+          <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+            <Play className="w-10 h-10 text-primary fill-current" />
+          </div>
+          
+          <div className="space-y-2">
+            <h1 className="text-2xl font-bold text-foreground">Konten Eksklusif Premium</h1>
+            <p className="text-muted-foreground text-sm leading-relaxed">
+              Ups! Untuk mengakses film ini kamu memerlukan voucher aktif. Silakan hubungi admin untuk aktivasi instan.
+            </p>
+          </div>
+
+          <div className="p-4 bg-secondary/50 rounded-2xl border border-border">
+            <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Admin Resmi</p>
+            <p className="font-bold text-lg text-foreground">Rhezza Maun</p>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <a 
+              href={waLink}
+              target="_blank"
+              className="w-full py-4 rounded-full bg-[#25D366] text-white font-bold flex items-center justify-center gap-2 hover:scale-105 transition-transform shadow-lg"
+            >
+              <MessageCircle className="w-5 h-5" />
+              Beli Voucher via WhatsApp
+            </a>
+            
+            <button 
+              onClick={() => router.push('/')}
+              className="w-full py-3 text-muted-foreground text-sm hover:text-foreground transition-colors"
+            >
+              Kembali ke Beranda
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
     <main className="min-h-screen pt-20">
-      {/* Hero Section with Cover */}
       <div className="relative">
-        {/* Background Blur */}
         <div className="absolute inset-0 overflow-hidden">
           <img
             src={book.cover}
@@ -91,7 +116,6 @@ export default function DramaBoxDetailPage() {
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 py-8">
-          {/* Back Button */}
           <button
             onClick={() => router.back()}
             className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6"
@@ -101,32 +125,20 @@ export default function DramaBoxDetailPage() {
           </button>
 
           <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-8">
-            {/* Cover */}
             <div className="relative group">
               <img
                 src={book.cover}
                 alt={book.bookName}
                 className="w-full max-w-[300px] mx-auto rounded-2xl shadow-2xl"
               />
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-6">
-                <Link
-                  href={`/watch/dramabox/${book.bookId}`}
-                  className="px-8 py-3 rounded-full bg-primary text-primary-foreground font-semibold flex items-center gap-2 hover:scale-105 transition-transform shadow-lg"
-                >
-                  <Play className="w-5 h-5 fill-current" />
-                  Tonton Sekarang
-                </Link>
-              </div>
             </div>
 
-            {/* Info */}
             <div className="space-y-6">
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold font-display gradient-text mb-4">
                   {book.bookName}
                 </h1>
 
-                {/* Stats */}
                 <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                   <div className="flex items-center gap-1.5">
                     <Play className="w-4 h-4" />
@@ -141,7 +153,6 @@ export default function DramaBoxDetailPage() {
                 </div>
               </div>
 
-              {/* Tags */}
               {book.tags && book.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {book.tags.map((tag) => (
@@ -152,7 +163,6 @@ export default function DramaBoxDetailPage() {
                 </div>
               )}
 
-              {/* Description */}
               <div className="glass rounded-xl p-4">
                 <h3 className="font-semibold text-foreground mb-2">Sinopsis</h3>
                 <p className="text-muted-foreground leading-relaxed">
@@ -160,7 +170,6 @@ export default function DramaBoxDetailPage() {
                 </p>
               </div>
 
-              {/* Watch Button */}
               <Link
                 href={`/watch/dramabox/${book.bookId}`}
                 className="inline-flex items-center gap-2 px-8 py-3 rounded-full font-semibold text-primary-foreground transition-all hover:scale-105 shadow-lg"
