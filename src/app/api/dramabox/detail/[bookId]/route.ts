@@ -1,39 +1,34 @@
-import { safeJson, encryptedResponse } from "@/lib/api-utils";
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from "next/server";
-import { headers } from "next/headers";
 
-const UPSTREAM_API = (process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.sansekai.my.id/api") + "/dramabox";
+export async function GET(request: NextRequest) {
+  const { searchParams } = request.nextUrl;
+  const voucher = searchParams.get("voucher") || "";
+  
+  // PROTEKSI VOUCHER
+  if (!voucher || voucher.length < 2) {
+    return NextResponse.json({ 
+      error: "Voucher Required", 
+      message: "Akses Ditolak! Untuk Beli Voucher silakan hubungi: Rhezza Maun. No WhatsApp: 081245511900" 
+    }, { status: 403 });
+  }
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ bookId: string }> }
-) {
-  const { bookId } = await params;
-  const headersList = await headers();
-  const accept = headersList.get("accept") || "";
+  const pathParts = request.nextUrl.pathname.split('/');
+  const folder = pathParts[3];
+  const UPSTREAM_API = `https://api.sansekai.my.id/api/${folder}/foryou`;
 
-
-
-  // If API fetch -> proxy to upstream
   try {
-    const response = await fetch(`${UPSTREAM_API}/detail?bookId=${bookId}`, {
+    const response = await fetch(`${UPSTREAM_API}?voucher=${voucher}`, {
       cache: 'no-store',
     });
-
-    if (!response.ok) {
-      return NextResponse.json(
-        { error: "Failed to fetch data" },
-        { status: response.status }
-      );
+    const data = await response.json();
+    
+    if (data.status === "failed" || data.error) {
+      return NextResponse.json({ error: "Invalid Voucher", message: "Voucher salah/expired. Hubungi Rhezza Maun (081245511900)." }, { status: 403 });
     }
-
-    const data = await safeJson(response);
-    return encryptedResponse(data);
+    
+    return NextResponse.json(data);
   } catch (error) {
-    console.error("API Error:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
